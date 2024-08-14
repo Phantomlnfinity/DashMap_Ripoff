@@ -59,6 +59,7 @@ function draw() {
     ctx.fillStyle = "#61b3d8"
     ctx.fillRect(0, 0, 1500, 1500)
   } else {
+    ctx.filter = "brightness(70%)"
     ctx.fillStyle = "#59cb63"
     ctx.fillRect(0, 0, 1500, 1500)
     ctx.fillStyle = "#57c661"
@@ -68,6 +69,19 @@ function draw() {
   }
 
   json.trackPieces.sort(sortData)
+  var yvalues = []
+  for (let i = 0; i < json.trackPieces.length; i++) {
+    if (!yvalues.includes(json.trackPieces[i].p[1])) {
+      yvalues.push(json.trackPieces[i].p[1])
+    }
+  }
+  if (yvalues.length < 10) {
+    var scale = 5
+    var min = 100-yvalues.length*2.5
+  } else {
+    var scale = 50 / yvalues.length
+    var min = 75
+  }
 
   ctx.lineWidth = 4
   var ids = ""
@@ -76,7 +90,7 @@ function draw() {
     ctx.save();
     r = json.trackPieces[i].r
     id = json.trackPieces[i].id
-
+    ctx.filter = "brightness(" + ((yvalues.indexOf(json.trackPieces[i].p[1])+0.5) * scale + min) + "%)"
     road = "#a5a5a5"
     yellow = "#ffcf00"
     blue = "#5279ff"
