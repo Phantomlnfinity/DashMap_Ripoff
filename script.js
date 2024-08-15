@@ -5,6 +5,7 @@ console.log(window.innerHeight)
 let scale = 1
 let json = {}
 
+
 function resize() {
   ctx.scale(1 / scale, 1 / scale)
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -53,6 +54,26 @@ function fetchData() {
     })
 }
 
+const hexToRGB = (hex) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+  
+    return( [r, g, b])
+}
+
+function brightnessChange(color, brightness) {
+  rgb = hexToRGB(color)
+
+  for (let i = 0; i < 3; i++) {
+    rgb[i] = Math.round(rgb[i] * brightness / 100)
+    if (rgb[i] > 255) {
+      rgb[i] = 255
+    }
+  } 
+  return "rgb(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ")"
+}
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (json.environmentId == 2) {
@@ -66,6 +87,7 @@ function draw() {
     for (let i = 0; i < 50; i++) {
       ctx.fillRect(0, i * 30, 1500, 15)
     }
+    ctx.filter = "brightness(100%)"
   }
 
   json.trackPieces.sort(sortData)
@@ -85,24 +107,30 @@ function draw() {
 
   ctx.lineWidth = 4
   var ids = ""
+  
   for (let i = 0; i < json.trackPieces.length; i++) {
     ids += json.trackPieces[i].id + ", "
+    if (i == 0 || json.trackPieces[i].p[1] != json.trackPieces[i - 1].p[1]) {
+      brightness = (yvalues.indexOf(json.trackPieces[i].p[1])+0.5) * scale + min
+
+      
+      road = brightnessChange("#a5a5a5", brightness)
+      yellow = brightnessChange("#ffcf00", brightness)
+      blue = brightnessChange("#5279ff", brightness)
+      white = brightnessChange("#ffffff", brightness)
+      border = brightnessChange("#363636", brightness)
+      finish = brightnessChange("#ef3533", brightness)
+      platformEdge = brightnessChange("#dbceda", brightness)
+      roadPlatform = brightnessChange("#e2cfdd", brightness)
+      tube = brightnessChange("#67ffff", brightness)
+      lightgrass = brightnessChange("#56d463", brightness)
+      darkgrass = brightnessChange("#53cd5f", brightness)
+      tree = brightnessChange("#1b6e32", brightness)
+    }
+    
     ctx.save();
     r = json.trackPieces[i].r
     id = json.trackPieces[i].id
-    ctx.filter = "brightness(" + ((yvalues.indexOf(json.trackPieces[i].p[1])+0.5) * scale + min) + "%)"
-    road = "#a5a5a5"
-    yellow = "#ffcf00"
-    blue = "#5279ff"
-    white = "#ffffff"
-    border = "#363636"
-    finish = "#ef3533"
-    platformEdge = "#dbceda"
-    roadPlatform = "#e2cfdd"
-    tube = "#67ffff"
-    lightgrass = "#56d463"
-    darkgrass = "#53cd5f"
-    tree = "#1b6e32"
 
     if (r == 0) {
       x = (json.trackPieces[i].p[0] + 750)
@@ -1074,7 +1102,6 @@ function draw() {
 
     ctx.restore()
   }
-  console.log(ids)
 }
 
 function sineWave(x, y, width, height, invert) {
