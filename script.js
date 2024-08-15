@@ -1,6 +1,9 @@
 const c = document.getElementById("canvas");
 const ctx = c.getContext("2d");
 const checkbox = document.getElementById("layer")
+
+console.log(Math.max(255, 255).toString())
+
 //ctx.scale((window.innerHeight) / 1500, (window.innerHeight) / 1500)
 console.log(window.innerHeight)
 let scale = 1
@@ -86,16 +89,17 @@ function fetchData() {
     })
 }
 
-const hexToRGB = (hex) => {
+const hexToRGBA = (hex) => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
+  const a = hex.slice(7, 10)
 
-  return ([r, g, b])
+  return ([r, g, b, a])
 }
 
 function brightnessChange(color, brightness) {
-  rgb = hexToRGB(color)
+  rgb = hexToRGBA(color)
 
   for (let i = 0; i < 3; i++) {
     rgb[i] = Math.round(rgb[i] * brightness / 100)
@@ -103,11 +107,10 @@ function brightnessChange(color, brightness) {
       rgb[i] = 255
     }
   }
-  return "rgb(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ")"
+  return "rgba(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ", " + rgb[3] + ")"
 }
 
 function draw() {
-  ctx.globalAlpha = 1
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (json.environmentId == 2) {
     ctx.fillStyle = "#61b3d8"
@@ -141,35 +144,35 @@ function draw() {
   var ids = ""
 
   for (let i = 0; i < json.trackPieces.length; i++) {
-    alpha = 1
+    var alpha = 1
     if (checkbox.checked) {
       if (json.trackPieces[i].p[1] != yvalues[layer]) {
         if (json.trackPieces[i].p[1] == yvalues[layer] - 15 || json.trackPieces[i].p[1] == yvalues[layer] + 15) {
-          var alpha = 0.25
+          alpha = 0.25
         } else {
           continue
         }
       }
     }
-    ctx.globalAlpha = alpha
 
     ids += json.trackPieces[i].id + ", "
     if (i == 0 || json.trackPieces[i].p[1] != json.trackPieces[i - 1].p[1]) {
       brightness = (yvalues.indexOf(json.trackPieces[i].p[1]) + 0.5) * scale + min
-
-
-      road = brightnessChange("#a5a5a5", brightness)
-      yellow = brightnessChange("#ffcf00", brightness)
-      blue = brightnessChange("#5279ff", brightness)
-      white = brightnessChange("#ffffff", brightness)
-      border = brightnessChange("#363636", brightness)
-      finish = brightnessChange("#ef3533", brightness)
-      platformEdge = brightnessChange("#dbceda", brightness)
-      roadPlatform = brightnessChange("#e2cfdd", brightness)
-      tube = brightnessChange("#67ffff", brightness)
-      lightgrass = brightnessChange("#56d463", brightness)
-      darkgrass = brightnessChange("#53cd5f", brightness)
-      tree = brightnessChange("#1b6e32", brightness)
+      let trans = alpha
+      console.log("#a5a5a5" + trans)
+      
+      road = brightnessChange("#a5a5a5" + trans, brightness)
+      yellow = brightnessChange("#ffcf00" + trans, brightness)
+      blue = brightnessChange("#5279ff" + trans, brightness)
+      white = brightnessChange("#ffffff" + trans, brightness)
+      border = brightnessChange("#363636" + trans, brightness)
+      finish = brightnessChange("#ef3533" + trans, brightness)
+      platformEdge = brightnessChange("#dbceda" + trans, brightness)
+      roadPlatform = brightnessChange("#e2cfdd" + trans, brightness)
+      tube = brightnessChange("#67ffff" + trans / 2, brightness)
+      lightgrass = brightnessChange("#56d463" + trans, brightness)
+      darkgrass = brightnessChange("#53cd5f" + trans, brightness)
+      tree = brightnessChange("#1b6e32" + trans, brightness)
     }
 
     ctx.save();
@@ -1012,24 +1015,20 @@ function draw() {
     }
 
     else if (id == 91) {
-      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.fillRect(x - 15, y - 15, 30, 30)
       ctx.fillRect(x - 15, y - 15, 30, 30)
 
-      ctx.globalAlpha = alpha * 1;
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 15, 30, 1)
       ctx.fillRect(x - 15, y + 13, 30, 1)
     }
 
     else if (id == 92) {
-      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.fillRect(x - 15, y - 15, 30, 15)
       ctx.fillRect(x - 15, y - 15, 30, 15)
 
-      ctx.globalAlpha = alpha * 1;
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 15, 30, 1)
       ctx.fillRect(x - 15, y - 1, 30, 1)
@@ -1044,7 +1043,6 @@ function draw() {
     }
 
     else if (id == 95) {
-      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.beginPath();
       ctx.arc(x + 30, y + 30, 60, Math.PI, Math.PI / 2 * 3);
@@ -1054,7 +1052,6 @@ function draw() {
       ctx.arc(x + 30, y + 30, 60, Math.PI, Math.PI / 2 * 3);
       ctx.arc(x + 30, y + 30, 30, Math.PI / 2 * 3, Math.PI, true);
       ctx.fill();
-      ctx.globaAlpha = alpha * 1;
 
       ctx.fillStyle = border
       ctx.fillRect(x - 30, y + 29, 30, 1)
@@ -1068,7 +1065,6 @@ function draw() {
       ctx.arc(x, y, 14, 0, Math.PI * 2)
       ctx.stroke()
 
-      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.beginPath();
       ctx.arc(x, y, 15, Math.PI, 0)
@@ -1081,15 +1077,12 @@ function draw() {
       ctx.lineTo(x - 15, y - 45)
       ctx.lineTo(x + 15, y - 45)
       ctx.fill()
-
-      ctx.globalAlpha = alpha * 1
 
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 45, 30, 1)
     }
 
     else if (id == 97) {
-      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.beginPath();
       ctx.arc(x, y, 15, Math.PI, 0)
@@ -1102,8 +1095,6 @@ function draw() {
       ctx.lineTo(x - 15, y - 45)
       ctx.lineTo(x + 15, y - 45)
       ctx.fill()
-
-      ctx.globalAlpha = alpha * 1
 
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 45, 30, 1)
