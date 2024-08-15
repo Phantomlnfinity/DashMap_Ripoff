@@ -1,9 +1,35 @@
 const c = document.getElementById("canvas");
 const ctx = c.getContext("2d");
+const checkbox = document.getElementById("layer")
 //ctx.scale((window.innerHeight) / 1500, (window.innerHeight) / 1500)
 console.log(window.innerHeight)
 let scale = 1
 let json = {}
+let layer = 0
+let yvalues = []
+
+checkbox.addEventListener('change', function() {
+  layer = 0
+  draw()
+})
+
+addEventListener("keydown", changeLayer);
+
+function changeLayer(key) {
+  if (key.code == "Equal") {
+    console.log(yvalues)
+    if (layer < yvalues.length) {
+      layer += 1
+      draw()
+    }
+  }
+  if (key.code == "Minus") {
+    if (layer > 0) {
+      layer -= 1
+      draw()
+    }
+  }
+}
 
 
 function resize() {
@@ -33,6 +59,12 @@ function sortData(a, b) {
         return a.p[0] - b.p[0]
       }
     } else {
+      if (a.id == 12 || a.id == 21 || a.id == 71 || a.id == 72) {
+        return 1
+      }
+      if (b.id == 12 || b.id == 21 || b.id == 71 || b.id == 72) {
+        return -1
+      }
       return a.id - b.id
     }
   } else {
@@ -41,6 +73,7 @@ function sortData(a, b) {
 }
 
 function fetchData() {
+  layer = 0
   ctx.scale(1 / scale, 1 / scale)
   scale = (window.innerHeight - 35) / 1500
   ctx.scale(scale, scale)
@@ -55,11 +88,11 @@ function fetchData() {
 }
 
 const hexToRGB = (hex) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-  
-    return( [r, g, b])
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  return ([r, g, b])
 }
 
 function brightnessChange(color, brightness) {
@@ -70,11 +103,12 @@ function brightnessChange(color, brightness) {
     if (rgb[i] > 255) {
       rgb[i] = 255
     }
-  } 
+  }
   return "rgb(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ")"
 }
 
 function draw() {
+  ctx.globalAlpha = 1
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (json.environmentId == 2) {
     ctx.fillStyle = "#61b3d8"
@@ -91,7 +125,6 @@ function draw() {
   }
 
   json.trackPieces.sort(sortData)
-  var yvalues = []
   for (let i = 0; i < json.trackPieces.length; i++) {
     if (!yvalues.includes(json.trackPieces[i].p[1])) {
       yvalues.push(json.trackPieces[i].p[1])
@@ -99,7 +132,7 @@ function draw() {
   }
   if (yvalues.length < 10) {
     var scale = 5
-    var min = 100-yvalues.length*2.5
+    var min = 100 - yvalues.length * 2.5
   } else {
     var scale = 50 / yvalues.length
     var min = 75
@@ -107,13 +140,25 @@ function draw() {
 
   ctx.lineWidth = 4
   var ids = ""
-  
+
   for (let i = 0; i < json.trackPieces.length; i++) {
+    alpha = 1
+    if (checkbox.checked) {
+      if (json.trackPieces[i].p[1] != yvalues[layer]) {
+        if (json.trackPieces[i].p[1] == yvalues[layer] - 15 || json.trackPieces[i].p[1] == yvalues[layer] + 15) {
+          var alpha = 0.25
+        } else {
+          continue
+        }
+      }
+    }
+    ctx.globalAlpha = alpha
+
     ids += json.trackPieces[i].id + ", "
     if (i == 0 || json.trackPieces[i].p[1] != json.trackPieces[i - 1].p[1]) {
-      brightness = (yvalues.indexOf(json.trackPieces[i].p[1])+0.5) * scale + min
+      brightness = (yvalues.indexOf(json.trackPieces[i].p[1]) + 0.5) * scale + min
 
-      
+
       road = brightnessChange("#a5a5a5", brightness)
       yellow = brightnessChange("#ffcf00", brightness)
       blue = brightnessChange("#5279ff", brightness)
@@ -127,7 +172,7 @@ function draw() {
       darkgrass = brightnessChange("#53cd5f", brightness)
       tree = brightnessChange("#1b6e32", brightness)
     }
-    
+
     ctx.save();
     r = json.trackPieces[i].r
     id = json.trackPieces[i].id
@@ -968,24 +1013,24 @@ function draw() {
     }
 
     else if (id == 91) {
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.fillRect(x - 15, y - 15, 30, 30)
       ctx.fillRect(x - 15, y - 15, 30, 30)
 
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = alpha * 1;
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 15, 30, 1)
       ctx.fillRect(x - 15, y + 13, 30, 1)
     }
 
     else if (id == 92) {
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.fillRect(x - 15, y - 15, 30, 15)
       ctx.fillRect(x - 15, y - 15, 30, 15)
 
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = alpha * 1;
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 15, 30, 1)
       ctx.fillRect(x - 15, y - 1, 30, 1)
@@ -1000,7 +1045,7 @@ function draw() {
     }
 
     else if (id == 95) {
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.beginPath();
       ctx.arc(x + 30, y + 30, 60, Math.PI, Math.PI / 2 * 3);
@@ -1010,7 +1055,7 @@ function draw() {
       ctx.arc(x + 30, y + 30, 60, Math.PI, Math.PI / 2 * 3);
       ctx.arc(x + 30, y + 30, 30, Math.PI / 2 * 3, Math.PI, true);
       ctx.fill();
-      ctx.globaAlpha = 1;
+      ctx.globaAlpha = alpha * 1;
 
       ctx.fillStyle = border
       ctx.fillRect(x - 30, y + 29, 30, 1)
@@ -1024,7 +1069,7 @@ function draw() {
       ctx.arc(x, y, 14, 0, Math.PI * 2)
       ctx.stroke()
 
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.beginPath();
       ctx.arc(x, y, 15, Math.PI, 0)
@@ -1038,14 +1083,14 @@ function draw() {
       ctx.lineTo(x + 15, y - 45)
       ctx.fill()
 
-      ctx.globalAlpha = 1
+      ctx.globalAlpha = alpha * 1
 
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 45, 30, 1)
     }
 
     else if (id == 97) {
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = alpha * 0.5;
       ctx.fillStyle = tube
       ctx.beginPath();
       ctx.arc(x, y, 15, Math.PI, 0)
@@ -1059,7 +1104,7 @@ function draw() {
       ctx.lineTo(x + 15, y - 45)
       ctx.fill()
 
-      ctx.globalAlpha = 1
+      ctx.globalAlpha = alpha * 1
 
       ctx.fillStyle = border
       ctx.fillRect(x - 15, y - 45, 30, 1)
