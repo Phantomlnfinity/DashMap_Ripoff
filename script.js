@@ -9,7 +9,6 @@ let layer = 0
 let yvalues = []
 
 checkbox.addEventListener('change', function() {
-  layer = 0
   draw()
 })
 
